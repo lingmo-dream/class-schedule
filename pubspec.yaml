@@ -33,6 +33,10 @@ dependencies:
   provider: ^6.1.5+1
   shared_preferences: ^2.5.3
   intl: ^0.20.2
+  file_picker: ^10.3.3
+  syncfusion_flutter_pdf: ^28.2.12
+  html: ^0.15.6
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

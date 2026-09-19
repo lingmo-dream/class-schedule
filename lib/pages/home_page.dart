@@ -1,85 +1,76 @@
-// 响应式应用外壳：宽屏使用 NavigationRail，小屏使用 NavigationBar。
+// 应用主壳：统一标题栏、响应式导航和页面切换。
 import 'package:flutter/material.dart';
 
+import '../widgets/app_navigation.dart';
 import 'course_management_page.dart';
+import 'data_page.dart';
+import 'exams_page.dart';
+import 'notes_page.dart';
+import 'settings_page.dart';
 import 'term_management_page.dart';
 import 'timetable_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  final pages = const [
+  static const pages = [
     TimetablePage(),
-    TermManagementPage(),
     CourseManagementPage(),
+    TermManagementPage(),
+    ExamsPage(),
+    NotesPage(),
+    DataPage(),
+    SettingsPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= 900;
-    final content = IndexedStack(index: selectedIndex, children: pages);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           '外事课程表',
-          style: TextStyle(fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Icon(
+                Icons.school_outlined,
+                size: 18,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
       ),
       body: wide
           ? Row(
               children: [
-                NavigationRail(
+                AppNavigation(
                   selectedIndex: selectedIndex,
-                  onDestinationSelected: (value) =>
-                      setState(() => selectedIndex = value),
-                  labelType: NavigationRailLabelType.all,
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.calendar_view_week),
-                      label: Text('周课表'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.event_note),
-                      label: Text('学期管理'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.menu_book),
-                      label: Text('课程管理'),
-                    ),
-                  ],
+                  onSelected: (value) => setState(() => selectedIndex = value),
                 ),
                 const VerticalDivider(width: 1),
-                Expanded(child: content),
+                Expanded(
+                  child: IndexedStack(index: selectedIndex, children: pages),
+                ),
               ],
             )
-          : content,
+          : IndexedStack(index: selectedIndex, children: pages),
       bottomNavigationBar: wide
           ? null
-          : NavigationBar(
+          : AppNavigation(
               selectedIndex: selectedIndex,
-              onDestinationSelected: (value) =>
-                  setState(() => selectedIndex = value),
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.calendar_view_week),
-                  label: '周课表',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.event_note),
-                  label: '学期管理',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.menu_book),
-                  label: '课程管理',
-                ),
-              ],
+              onSelected: (value) => setState(() => selectedIndex = value),
             ),
     );
   }

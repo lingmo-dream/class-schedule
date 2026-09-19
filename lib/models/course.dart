@@ -6,7 +6,7 @@ class Course {
     this.teacher = '',
     this.location = '',
     this.colorIndex = 0,
-    this.note = '',
+    this.remark = '',
   });
 
   final String id;
@@ -14,21 +14,21 @@ class Course {
   final String teacher;
   final String location;
   final int colorIndex;
-  final String note;
+  final String remark;
 
   Course copyWith({
     String? name,
     String? teacher,
     String? location,
     int? colorIndex,
-    String? note,
+    String? remark,
   }) => Course(
     id: id,
     name: name ?? this.name,
     teacher: teacher ?? this.teacher,
     location: location ?? this.location,
     colorIndex: colorIndex ?? this.colorIndex,
-    note: note ?? this.note,
+    remark: remark ?? this.remark,
   );
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
@@ -37,7 +37,7 @@ class Course {
     teacher: json['teacher'] as String? ?? '',
     location: json['location'] as String? ?? '',
     colorIndex: (json['colorIndex'] as num?)?.toInt() ?? 0,
-    note: json['note'] as String? ?? '',
+    remark: (json['remark'] ?? json['note']) as String? ?? '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -46,6 +46,6 @@ class Course {
     'teacher': teacher,
     'location': location,
     'colorIndex': colorIndex,
-    'note': note,
+    'remark': remark,
   };
 }

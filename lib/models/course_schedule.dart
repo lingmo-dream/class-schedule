@@ -27,6 +27,8 @@ class CourseSchedule {
     required this.endPeriod,
     this.weekType = WeekType.all,
     this.customWeeks = const [],
+    this.weekFrom = 1,
+    this.weekTo = 20,
   });
 
   final String id;
@@ -37,13 +39,18 @@ class CourseSchedule {
   final int endPeriod;
   final WeekType weekType;
   final List<int> customWeeks;
+  final int weekFrom;
+  final int weekTo;
 
-  bool isVisibleInWeek(int week) => switch (weekType) {
-    WeekType.all => true,
-    WeekType.odd => week.isOdd,
-    WeekType.even => week.isEven,
-    WeekType.custom => customWeeks.contains(week),
-  };
+  bool isVisibleInWeek(int week) {
+    if (week < weekFrom || week > weekTo) return false;
+    return switch (weekType) {
+      WeekType.all => true,
+      WeekType.odd => week.isOdd,
+      WeekType.even => week.isEven,
+      WeekType.custom => customWeeks.contains(week),
+    };
+  }
 
   factory CourseSchedule.fromJson(Map<String, dynamic> json) => CourseSchedule(
     id: json['id'] as String,
@@ -58,6 +65,8 @@ class CourseSchedule {
         (item) => (item as num).toInt(),
       ),
     ],
+    weekFrom: (json['weekFrom'] as num?)?.toInt() ?? 1,
+    weekTo: (json['weekTo'] as num?)?.toInt() ?? 20,
   );
 
   Map<String, dynamic> toJson() => {
@@ -69,5 +78,7 @@ class CourseSchedule {
     'endPeriod': endPeriod,
     'weekType': weekType.value,
     'customWeeks': customWeeks,
+    'weekFrom': weekFrom,
+    'weekTo': weekTo,
   };
 }
