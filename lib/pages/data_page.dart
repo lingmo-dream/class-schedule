@@ -179,13 +179,14 @@ class DataPage extends StatelessWidget {
     }
     final coursesByKey = <String, Course>{
       for (final course in state.courses)
-        '${course.name}|${course.teacher}': course,
+        '${course.name}|${course.teacher}|${course.location}': course,
     };
     final importedSchedules = <CourseSchedule>[];
     for (final item in items) {
-      final key = '${item.courseName}|${item.teacher}';
+      final key = '${item.courseName}|${item.teacher}|${item.location}';
+      final existing = coursesByKey[key];
       final course =
-          coursesByKey[key] ??
+          existing ??
           Course(
             id: createId(),
             name: item.courseName,
@@ -193,9 +194,19 @@ class DataPage extends StatelessWidget {
             location: item.location,
             colorIndex: coursesByKey.length % 8,
           );
-      if (!coursesByKey.containsKey(key)) {
+      if (existing == null) {
         coursesByKey[key] = course;
         await state.addCourse(course);
+      } else if (existing.location != item.location) {
+        await state.updateCourse(
+          Course(
+            id: existing.id,
+            name: existing.name,
+            teacher: existing.teacher,
+            location: item.location,
+            colorIndex: existing.colorIndex,
+          ),
+        );
       }
       importedSchedules.add(
         CourseSchedule(
@@ -206,7 +217,7 @@ class DataPage extends StatelessWidget {
           startPeriod: item.startPeriod,
           endPeriod: item.endPeriod,
           weekType: item.weekType,
-          customWeeks: item.customWeeks,
+          customWeeks: item.customWeeks.toList()..sort(),
           weekFrom: item.weekFrom,
           weekTo: item.weekTo,
         ),
@@ -388,12 +399,37 @@ class _ScheduleTextDialogState extends State<_ScheduleTextDialog> {
     super.dispose();
   }
 
-  void parse() => setState(
-    () => result = ScheduleImportService.parseText(
-      controller.text,
-      defaultWeekday: weekday,
-    ),
-  );
+  void parse() {
+    final source = controller.text.trim();
+    setState(() {
+      if (_looksLikeJson(source)) {
+        try {
+          final jsonResult = ScheduleImportService.parseJson(source);
+          result = ScheduleImportResult(
+            items: jsonResult.items,
+            warning: jsonResult.termName == null
+                ? '未提供学期名称，将导入到当前学期。'
+                : '将导入到学期：${jsonResult.termName}',
+          );
+        } on FormatException {
+          result = ScheduleImportResult(items: const [], warning: 'JSON 格式无效');
+        } on TypeError {
+          result = ScheduleImportResult(items: const [], warning: 'JSON 字段格式不符合课表结构');
+        }
+      } else {
+        result = ScheduleImportService.parseText(
+          source,
+          defaultWeekday: weekday,
+        );
+      }
+    });
+  }
+
+  static bool _looksLikeJson(String source) {
+    final s = source.startsWith('\uFEFF') ? source.substring(1) : source;
+    final trimmed = s.trimLeft();
+    return trimmed.startsWith('{') || trimmed.startsWith('[');
+  }
 
   @override
   Widget build(BuildContext context) => AlertDialog(

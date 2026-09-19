@@ -14,7 +14,11 @@ class Term {
   final int totalWeeks;
   final bool isCurrent;
 
-  static String createId() => DateTime.now().microsecondsSinceEpoch.toString();
+  static String createId() {
+    final ts = DateTime.now().microsecondsSinceEpoch;
+    final rand = DateTime.now().millisecond;
+    return '$ts-$rand';
+  }
 
   factory Term.fromJson(Map<String, dynamic> json) => Term(
     id: json['id'] as String,
